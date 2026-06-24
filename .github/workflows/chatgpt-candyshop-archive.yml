@@ -5,6 +5,11 @@ on:
     paths:
       - '.github/scripts/chatgpt_archive_candyshop_20260624.py'
       - '.github/workflows/chatgpt-candyshop-archive.yml'
+  pull_request:
+    paths:
+      - '.github/scripts/chatgpt_archive_candyshop_20260624.py'
+      - '.github/workflows/chatgpt-candyshop-archive.yml'
+      - '.github/scripts/chatgpt_candyshop_trigger.txt'
   workflow_dispatch:
 
 permissions:
