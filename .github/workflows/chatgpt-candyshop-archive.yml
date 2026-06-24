@@ -1,4 +1,4 @@
-# PR run marker: ChatGPT Candyshop docs archive 2026-06-24
+# PR run marker: ChatGPT Candyshop docs archive fast pass 2026-06-24
 name: ChatGPT Candyshop docs archive
 
 on:
@@ -19,7 +19,7 @@ permissions:
 jobs:
   archive:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,6 +31,24 @@ jobs:
 
       - name: Install crawler dependencies
         run: python -m pip install --upgrade requests beautifulsoup4
+
+      - name: Patch crawler for fast archival run
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('.github/scripts/chatgpt_archive_candyshop_20260624.py')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('TIMEOUT = (20, 90)', 'TIMEOUT = (8, 20)')
+          s = s.replace('REQUEST_DELAY_SECONDS = 0.12', 'REQUEST_DELAY_SECONDS = 0.03')
+          s = s.replace('MAX_ASSET_BYTES = 150 * 1024 * 1024', 'MAX_ASSET_BYTES = 50 * 1024 * 1024')
+          s = s.replace('"script": ("src",), ', '')
+          s = s.replace('"iframe": ("src",), ', '')
+          old = 'if u and (rels & {"stylesheet", "icon", "preload", "prefetch", "manifest", "apple-touch-icon"} or PurePosixPath(urlsplit(u).path).suffix.lower() in FILES): tag["href"] = rel(local, add_asset(u))'
+          new = 'if u and ((urlsplit(u).hostname or "").lower() == HOST) and (rels & {"stylesheet", "icon", "preload", "prefetch", "manifest", "apple-touch-icon"} or PurePosixPath(urlsplit(u).path).suffix.lower() in FILES): tag["href"] = rel(local, add_asset(u))'
+          s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+          print('Patched crawler for fast run')
+          PY
 
       - name: Crawl and archive documentation
         run: python .github/scripts/chatgpt_archive_candyshop_20260624.py
